@@ -56,7 +56,6 @@ async function updateProfile(games: string[], profile: any) {
 }
 
 async function main() {
-  console.log(NOTION_SECRET)
   const games: string[] = await getGames()
   const profile: any = await getProfile()
   await updateProfile(games, profile)
