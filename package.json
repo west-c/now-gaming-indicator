@@ -1,0 +1,16 @@
+{
+  "name": "now-gaming-indicator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "ts-run": "ts-node index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@notionhq/client": "^2.2.13",
+    "axios": "^1.6.1",
+    "ts-node": "^10.9.1"
+  }
+}
