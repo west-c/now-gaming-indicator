@@ -26,27 +26,23 @@ async function getGames() {
 }
 
 async function getProfile() {
-  const postData = {
+  const response = await axios.post(MISSKEY_API_URL + '/i', {
     i: MISSKEY_TOKEN,
-  };
-  
-  const response = await axios.post(MISSKEY_API_URL + '/i', postData)
+  })
   return response.data
 }
 
 async function updateProfile(games: string[], profile: any) {
-  let fields: any[] = profile.fields.filter((field: any) => field.name !== 'Now Gaming')
+  const fields: any[] = profile.fields.filter((field: any) => field.name !== 'Now Gaming')
   fields.push({
       name: 'Now Gaming',
       value: games.join(' / '),
     })
 
-  const postData = {
-    i: MISSKEY_TOKEN,
-    fields: fields,
-  };
-  
-  axios.post(MISSKEY_API_URL + '/i/update', postData)
+  axios.post(MISSKEY_API_URL + '/i/update', {
+      i: MISSKEY_TOKEN,
+      fields: fields,
+    })
     .then(() => {
       console.log('Updated.');
     })
