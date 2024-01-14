@@ -1,5 +1,5 @@
 import { Client } from '@notionhq/client'
-import axios from 'axios';
+import axios from 'axios'
 
 const NOTION_SECRET = process.env.NOTION_SECRET
 const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID!
@@ -10,7 +10,7 @@ const notion = new Client({
   auth: NOTION_SECRET,
 })
 
-async function getGames() {
+async function getGames(): Promise<string[]> {
   const myDatabase = await notion.databases.query({
     database_id: NOTION_DATABASE_ID,
     filter: {
@@ -21,18 +21,17 @@ async function getGames() {
     },
   })
   const results: any[] = myDatabase.results
-  const list: string[] = results.map(page => page.properties.Title.title[0].plain_text)
-  return list
+  return results.map(page => page.properties.Title.title[0].plain_text)
 }
 
-async function getProfile() {
+async function getProfile(): Promise<any> {
   const response = await axios.post(MISSKEY_API_URL + '/i', {
     i: MISSKEY_TOKEN,
   })
   return response.data
 }
 
-async function updateProfile(games: string[], profile: any) {
+async function updateProfile(games: string[], profile: any): Promise<void> {
   const fields: any[] = profile.fields.filter((field: any) => field.name !== 'Now Gaming')
   fields.push({
       name: 'Now Gaming',
@@ -48,10 +47,10 @@ async function updateProfile(games: string[], profile: any) {
     })
     .catch(error => {
       console.error(error)
-    });
+    })
 }
 
-async function main() {
+async function main(): Promise<void> {
   const games: string[] = await getGames()
   const profile: any = await getProfile()
   await updateProfile(games, profile)
