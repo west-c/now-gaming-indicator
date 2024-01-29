@@ -36,7 +36,7 @@ async function updateProfile(games: string[], profile: any) {
   const fields: any[] = profile.fields.filter((field: any) => field.name !== 'Now Gaming')
   fields.push({
       name: 'Now Gaming',
-      value: games.join(' / '),
+      value: games.length !== 0 ? games.join(' / ') : 'おやすみ中',
     })
 
   axios.post(MISSKEY_API_URL + '/i/update', {
