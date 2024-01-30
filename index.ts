@@ -27,30 +27,40 @@ type Field = {
 }
 
 async function getGames (): Promise<string[]> {
-  const myDatabase: QueryDatabaseResponse = await notion.databases.query({
-    database_id: NOTION_DATABASE_ID,
-    filter: {
-      property: 'Status',
-      select: {
-        equals: 'やってる'
+  try {
+    const myDatabase: QueryDatabaseResponse = await notion.databases.query({
+      database_id: NOTION_DATABASE_ID,
+      filter: {
+        property: 'Status',
+        select: {
+          equals: 'やってる'
+        }
       }
-    }
-  })
+    })
 
-  return myDatabase.results.map(page => {
-    if (!isFullPage(page)) {
-      return ''
-    }
-    const title = page.properties.Title as TitleObject
-    return title.title[0].plain_text
-  })
+    return myDatabase.results.map(page => {
+      if (!isFullPage(page)) {
+        return ''
+      }
+      const title = page.properties.Title as TitleObject
+      return title.title[0].plain_text
+    })
+  } catch (error) {
+    console.error(error)
+    throw new Error('Failed to get games')
+  }
 }
 
 async function getProfile (): Promise<Profile> {
-  const response = await axios.post(MISSKEY_API_URL + '/i', {
-    i: MISSKEY_TOKEN
-  })
-  return response.data as Profile
+  try {
+    const response = await axios.post(`${MISSKEY_API_URL}/i`, {
+      i: MISSKEY_TOKEN
+    })
+    return response.data as Profile
+  } catch (error) {
+    console.error(error)
+    throw new Error('Failed to get profile')
+  }
 }
 
 async function updateProfile (games: string[], profile: Profile): Promise<void> {
@@ -60,16 +70,16 @@ async function updateProfile (games: string[], profile: Profile): Promise<void> 
     value: games.length !== 0 ? games.join(' / ') : 'おやすみ中'
   })
 
-  axios.post(MISSKEY_API_URL + '/i/update', {
-    i: MISSKEY_TOKEN,
-    fields
-  })
-    .then(() => {
-      console.log('Updated.')
+  try {
+    await axios.post(`${MISSKEY_API_URL}/i/update`, {
+      i: MISSKEY_TOKEN,
+      fields
     })
-    .catch(error => {
-      console.error(error)
-    })
+    console.log('Updated.')
+  } catch (error) {
+    console.error(error)
+    throw new Error('Failed to update profile')
+  }
 }
 
 (async function main (): Promise<void> {
