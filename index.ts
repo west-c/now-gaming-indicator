@@ -1,4 +1,5 @@
-import { Client } from '@notionhq/client'
+import { Client, isFullPage } from '@notionhq/client'
+import { QueryDatabaseResponse, RichTextItemResponse } from '@notionhq/client/build/src/api-endpoints'
 import axios from 'axios'
 
 const NOTION_SECRET = process.env.NOTION_SECRET
@@ -10,8 +11,23 @@ const notion = new Client({
   auth: NOTION_SECRET,
 })
 
+type TitleObject = {
+  type: "title"
+  title: Array<RichTextItemResponse>
+  id: string
+}
+
+type Profile = {
+  fields: Field[]
+}
+
+type Field = {
+  name: string
+  value: string
+}
+
 async function getGames(): Promise<string[]> {
-  const myDatabase = await notion.databases.query({
+  const myDatabase: QueryDatabaseResponse = await notion.databases.query({
     database_id: NOTION_DATABASE_ID,
     filter: {
       property: 'Status',
@@ -20,19 +36,25 @@ async function getGames(): Promise<string[]> {
       },
     },
   })
-  const results: any[] = myDatabase.results
-  return results.map(page => page.properties.Title.title[0].plain_text)
+
+  return myDatabase.results.map(page => {
+    if (!isFullPage(page)) {
+      return ''
+    }
+    const title = page.properties.Title as TitleObject
+    return title.title[0].plain_text
+  })
 }
 
-async function getProfile(): Promise<any> {
+async function getProfile(): Promise<Profile> {
   const response = await axios.post(MISSKEY_API_URL + '/i', {
     i: MISSKEY_TOKEN,
   })
-  return response.data
+  return response.data as Profile
 }
 
-async function updateProfile(games: string[], profile: any): Promise<void> {
-  const fields: any[] = profile.fields.filter((field: any) => field.name !== 'Now Gaming')
+async function updateProfile(games: string[], profile: Profile): Promise<void> {
+  const fields: Field[] = profile.fields.filter(field => field.name !== 'Now Gaming')
   fields.push({
       name: 'Now Gaming',
       value: games.join(' / '),
@@ -52,7 +74,7 @@ async function updateProfile(games: string[], profile: any): Promise<void> {
 
 async function main(): Promise<void> {
   const games: string[] = await getGames()
-  const profile: any = await getProfile()
+  const profile: Profile = await getProfile()
   await updateProfile(games, profile)
 }
 
