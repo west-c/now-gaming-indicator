@@ -12,7 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@notionhq/client": "^2.2.13",
     "axios": "^1.6.1",
     "ts-node": "^10.9.1"
   },
