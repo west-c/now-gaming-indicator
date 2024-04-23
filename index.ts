@@ -1,23 +1,11 @@
-import { Client, isFullPage } from '@notionhq/client';
-import {
-  type QueryDatabaseResponse,
-  type RichTextItemResponse,
-} from '@notionhq/client/build/src/api-endpoints';
 import axios from 'axios';
 
-const NOTION_SECRET: string = process.env.NOTION_SECRET ?? '';
-const NOTION_DATABASE_ID: string = process.env.NOTION_DATABASE_ID ?? '';
+const NOW_GAMIMNG_API_URL: string = process.env.NOW_GAMIMNG_API_URL ?? '';
 const MISSKEY_TOKEN: string = process.env.MISSKEY_TOKEN ?? '';
 const MISSKEY_API_URL: string = process.env.MISSKEY_API_URL ?? '';
 
-const notion = new Client({
-  auth: NOTION_SECRET,
-});
-
-type TitleObject = {
-  type: 'title';
-  title: RichTextItemResponse[];
-  id: string;
+type Games = {
+  now_gaming: string[];
 };
 
 type Profile = {
@@ -31,23 +19,9 @@ type Field = {
 
 async function getGames(): Promise<string[]> {
   try {
-    const myDatabase: QueryDatabaseResponse = await notion.databases.query({
-      database_id: NOTION_DATABASE_ID,
-      filter: {
-        property: 'Status',
-        select: {
-          equals: 'やってる',
-        },
-      },
-    });
-
-    return myDatabase.results.map((page) => {
-      if (!isFullPage(page)) {
-        return '';
-      }
-      const title = page.properties.Title as TitleObject;
-      return title.title[0].plain_text;
-    });
+    const response = await axios.get(NOW_GAMIMNG_API_URL);
+    const data = response.data as Games;
+    return data.now_gaming;
   } catch (error) {
     console.error(error);
     throw new Error('Failed to get games');
